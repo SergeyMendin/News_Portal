@@ -93,6 +93,10 @@ class Post(models.Model):
     def preview(self):
         return self.content[:125]
 
+    # формат вывода наименования товара и его описания (первые 20 знаков)
+    def __str__(self):
+        return f'{self.title.title()}: {self.content[:20]}'
+
 
 # создаем промежуточную модель PostCategory
 class PostCategory(models.Model):

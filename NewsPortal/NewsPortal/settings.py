@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +28,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+SITE_ID = 1
+
+# подключаем фронтенд
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]
 
 # Application definition
 
@@ -37,7 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'NewsPaper'
+    'django.contrib.sites',
+    'django.contrib.flatpages',
+    'NewsPaper',
 ]
 
 MIDDLEWARE = [
@@ -48,14 +57,20 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
 ]
 
 ROOT_URLCONF = 'NewsPortal.urls'
 
 TEMPLATES = [
     {
+        # указываем, что в качестве templates используем шаблоны Django
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+
+        # указываем путь, по которому нужно искать все шаблоны html
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+
+        # нужно ли искать Django наши шаблоны по пути DIRS?
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -63,6 +78,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
             ],
         },
     },

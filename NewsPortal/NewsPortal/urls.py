@@ -14,8 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # чтобы адреса в будущем написанных нами страничек были доступны
+    # нам для перехода по ним, добавим путь:
+    path('pages/', include('django.contrib.flatpages.urls')),
+
+    # чтобы все адреса из файла NewsPaper/urls.py
+    # сами автоматически подключались когда мы их добавим.
+    path('news/', include('NewsPaper.urls')),
 ]
