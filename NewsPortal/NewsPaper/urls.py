@@ -8,5 +8,6 @@ urlpatterns = [
     path('',
          # вызываем метод as_view для того, чтобы представить класс PostsList в виде view
          PostsList.as_view()),
-    path('<int:pk>', PostDetail.as_view())
+
+    path('<int:pk>', PostDetail.as_view()),
 ]
