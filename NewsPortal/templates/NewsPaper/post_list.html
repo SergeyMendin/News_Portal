@@ -1,0 +1,74 @@
+<! -- наследование шаблона default -->
+{% extends 'flatpages/default.html' %}
+
+{% block title %} News {% endblock title %}
+
+{% load custom_filters %}
+
+<! -- начало контента -->
+{% block content %}
+
+
+
+<h1>Новости</h1>
+<h6>Количество новостей (вариант 1): {{ posts_qty }}</h6>
+<h6>Количество новостей (вариант 2): {{ object_list|length }}</h6>
+{# <hr> #}
+{# <h6>Список новостей: {{ object_list }}</h6> #}
+
+{# согласно синтаксису языка шаблонов Django, #}
+<! переменные должны быть окружены двойными фигурными скобками {{ news }} >
+{# а теги в одну фигурную скобку и символ "%": {% news %} пишутся, когда нужно задать условие #}
+
+<hr>
+{% if object_list %}
+    <table>
+        <tr>
+            <td>
+                <b>
+                    № поста
+                </b>
+            </td>
+            <td>
+                <b>
+                    Заголовок
+                </b>
+            </td>
+
+            <td>
+                <b>
+                    Дата публикации в формате (день.месяц.год)
+                </b>
+            </td>
+            <td>
+                <b>
+                    Первые 20 слов текста статьи
+                </b>
+            </td>
+        </tr>
+        {% for post in object_list %} <! object_list содержит все объекты модели Post >
+        <tr>
+            <td>
+                {{ post.id }}
+            </td>
+
+            <td>
+                {{ post.title|default:"Без заголовка"|truncatewords:4|censor:'***' }}
+            </td>
+            <td>
+                {{ post.date_created|default:"Без даты" }}
+            </td>
+            <td>
+                {{ post.content|truncatechars:20|censor:'***' }}
+            </td>
+        {% endfor %}
+        </tr>
+    </table>
+{% else %}
+<h2>
+    Новостей нет!
+</h2>
+{% endif %}
+
+<! -- конец контента -->
+{% endblock content %}

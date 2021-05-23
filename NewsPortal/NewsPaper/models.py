@@ -54,7 +54,7 @@ class Post(models.Model):
     news = 'N'
 
     POSITIONS = [
-        (article, "Статься"),
+        (article, "Статья"),
         (news, "Новость"),
     ]
 
@@ -65,10 +65,10 @@ class Post(models.Model):
     """ <<< Конец настройки выбора категории поста >>> """
 
     # дата и время создания поста
-    date_created = models.DateField(auto_now_add=True)
+    date_created = models.DateTimeField(auto_now_add=True)
 
     # заголовок статьи/новости
-    title = models.CharField(max_length=50)
+    title = models.CharField(max_length=100)
 
     # текст статьи/новости
     content = models.TextField()
