@@ -8,12 +8,7 @@
 <! -- начало контента -->
 {% block content %}
 
-<!-- Перед таблицей добавим форму для поиска -->
-<form method="GET">
-    {{ filter.form }} <!-- Форму от фильтров за нас сделает django.
-    А вот кнопку, увы придётся делать самому -->
-    <input type="submit" value="Найти">
-</form>
+
 
 <h1>Новости</h1>
 <h6>Количество новостей (вариант 1): {{ posts_qty }}</h6>
@@ -25,7 +20,18 @@
 <! переменные должны быть окружены двойными фигурными скобками {{ news }} >
 {# а теги в одну фигурную скобку и символ "%": {% news %} пишутся, когда нужно задать условие #}
 
+
 <hr>
+
+<!-- Перед таблицей добавим форму для поиска -->
+<form method="GET">
+    {{ search.form }} <!-- Форму от фильтров за нас сделает django.
+    А вот кнопку, увы придётся делать самому -->
+    <input type="submit" value="Найти">
+</form>
+
+<hr>
+
 {% if object_list %}
     <table>
         <tr>
@@ -51,7 +57,7 @@
                 </b>
             </td>
         </tr>
-        {% for post in object_list %} <! object_list содержит все объекты модели Post >
+        {% for post in search.qs %} <!-- итерация фильтра -> search.qs передает отфильтрованные post-ы -->
         <tr>
             <td>
                 {{ post.id }}
@@ -75,31 +81,26 @@
 </h2>
 {% endif %}
 
-<!-- Проверяем что поддерживается постраничный вывод -->
-{% if is_paginated %}
+<br>
 
-    <!-- Если доступна предыдущая страница, то даём ссылку на неё и самую первую страницу -->
-    {% if page_obj.has_previous %}
-        <a href="?page=1">First</a>
-        <a href="?page={{ page_obj.previous_page_number }}"><<<</a>
-    {% endif %}
-
-    <!-- Показываем только текущую страницу и ближайшие к ней, чтобы список не тянулся и не захламлял страницу -->
-    {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-            <a>{{ num }}</a>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-           <a href="?page={{ num }}">{{ num }}</a>
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; Начало </a>
+            <a href="?page={{ page_obj.previous_page_number }}"> <<< </a>
         {% endif %}
-    {% endfor %}
 
-    <!-- Если есть следующая страница, то даём ссылку на неё и на самую последнюю страницу -->
-    {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}">>>></a>
-        <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-    {% endif %}
+        <span class="current">
+            Стр {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}.
+        </span>
 
-{% endif %}
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}"> >>> </a>
+            <a href="?page={{ page_obj.paginator.num_pages }}"> Конец &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
 
 
 <! -- конец контента -->

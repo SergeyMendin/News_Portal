@@ -30,14 +30,14 @@ class PostsList(ListView):
     # зададим шаблон странички, в данном случае файл news.html
     # если не задать, то django автоматически выведет это имя из названия модели
     # и получится newspaper/post_list.html, которая всё-равно будет находится в папке templates
-    # template_name = 'news.html'
+    # template_name = 'post_list.html'
 
     # также, можно указать название шаблона в поле context_object_name,
     # либо не указывать, тогда newspaper/post_list.html будет выбран по умолчанию, как шаблон
-    # context_object_name = 'news'
+    # context_object_name = 'post_list'
 
     # установим постраничный вывод на каждую новость через paginator
-    paginate_by = 1
+    paginate_by = 10
 
     # пишем модуль, который принимает на вход отфильтрованные объекты
     def get_context_data(self, **kwargs):
@@ -52,7 +52,7 @@ class PostsList(ListView):
     # сортируем все обекты модели Post по параметру даты создания в обратном порядке:
     def get_queryset(self):
         qset = super().get_queryset()
-        return qset.order_by('-id', '-date_created')
+        return qset.order_by('id', '-date_created')
 
 
 class PostDetail(DetailView):

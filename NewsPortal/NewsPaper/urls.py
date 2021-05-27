@@ -10,4 +10,6 @@ urlpatterns = [
          PostsList.as_view()),
 
     path('<int:pk>', PostDetail.as_view()),
+    # добавим вьюшку для страницы по ссылке /news/search
+    path('search', PostsList.as_view()),
 ]
