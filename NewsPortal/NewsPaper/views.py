@@ -6,14 +6,22 @@ from django.shortcuts import render
 # что в этом представлении мы будем выводить список объектов из БД
 from django.views.generic import ListView, DetailView
 
-# импортируем модель Product из models.py
+# импортируем модель Post из models.py
 from .models import Post
+
+# импортируем наш фильтр
+from .search import PostFilter
+
+# импортируем класс, позволяющий удобно осуществлять постраничный вывод
+from django.core.paginator import Paginator
 
 
 # создадим модель объектов, которые будем выводить
 # Используется ListView - определяет список объектов, которые хотим отобразить.
 # По умолчанию это просто даст нам все для модели, которую мы указали.
 # Переопределив этот метод, мы можем расширить или полностью заменить эту логику.
+
+
 class PostsList(ListView):
     # в данном случае рассматриваются все посты,
     # поэтому model = Post из файла models.py
@@ -28,9 +36,17 @@ class PostsList(ListView):
     # либо не указывать, тогда newspaper/post_list.html будет выбран по умолчанию, как шаблон
     # context_object_name = 'news'
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+    # установим постраничный вывод на каждую новость через paginator
+    paginate_by = 1
+
+    # пишем модуль, который принимает на вход отфильтрованные объекты
+    def get_context_data(self, **kwargs):
+        # распаковываем self = Posts
         context = super().get_context_data(**kwargs)
-        context['posts_qty'] = len(Post.objects.all())
+        context['search'] = PostFilter(
+            self.request.GET,
+            queryset=self.get_queryset()
+        )
         return context
 
     # сортируем все обекты модели Post по параметру даты создания в обратном порядке:

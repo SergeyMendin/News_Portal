@@ -130,3 +130,4 @@ class Comment(models.Model):
         self.comment_rate -= 1
         # сохранение значения в базу данных
         self.save()
+
