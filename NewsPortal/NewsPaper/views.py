@@ -33,11 +33,11 @@ class PostsList(ListView):
     # зададим шаблон странички, в данном случае файл news.html
     # если не задать, то django автоматически выведет это имя из названия модели
     # и получится newspaper/post_list.html, которая всё-равно будет находится в папке templates
-    # template_name = 'post_list.html'
+    template_name = 'post_list.html'
 
     # также, можно указать название шаблона в поле context_object_name,
     # либо не указывать, тогда newspaper/post_list.html будет выбран по умолчанию, как шаблон
-    # context_object_name = 'post_list'
+    context_object_name = 'post_list'
 
     # установим постраничный вывод на каждую новость через paginator
     paginate_by = 10
@@ -57,7 +57,7 @@ class PostsList(ListView):
         context['form'] = PostForm()
         return context
 
-    # сортируем все обекты модели Post по параметру даты создания в обратном порядке:
+    # сортируем все объекты модели Post по параметру даты создания в обратном порядке:
     def get_queryset(self):
         qset = super().get_queryset()
         return qset.order_by('id', '-date_created')
@@ -79,3 +79,5 @@ class PostDetailedView(DetailView):
 class PostCreateView(CreateView):
     template_name = 'newspaper/post_create.html'
     form_class = PostForm
+
+
