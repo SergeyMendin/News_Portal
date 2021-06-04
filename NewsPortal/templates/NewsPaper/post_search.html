@@ -1,0 +1,31 @@
+<! -- наследование шаблона default -->
+{% extends 'flatpages/default.html' %}
+
+{% block title %} Find News {% endblock title %}
+
+{% load custom_filters %}
+
+<! -- начало контента -->
+{% block content %}
+
+
+<hr>
+
+<!-- Перед таблицей добавим форму для поиска -->
+<form method="GET">
+    {{ search.form }} <!-- Форму от фильтров за нас сделает django.
+    А вот кнопку, увы придётся делать самому -->
+    <input type="submit" value="Найти">
+</form>
+
+<hr>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }} <!-- Теперь нам нужна только готовая форма и кнопка -->
+    <input type="submit" value="Добавить пост">
+</form>
+
+
+<! -- конец контента -->
+{% endblock content %}
