@@ -57,14 +57,14 @@
                 </b>
             </td>
         </tr>
-        {% for post in search.qs %} <!-- итерация фильтра -> search.qs передает отфильтрованные post-ы -->
+        {% for post in object_list %}
         <tr>
             <td>
                 {{ post.id }}
             </td>
-
             <td>
-                {{ post.title|default:"Без заголовка"|truncatewords:4|censor:'***' }}
+                <!-- гиперсслыка -->
+                <a href="{% url 'post_details' post.id %}"> {{ post.title|default:"Без заголовка"|truncatewords:4|censor:'***' }}
             </td>
             <td>
                 {{ post.date_created|default:"Без даты" }}
@@ -83,23 +83,37 @@
 
 <br>
 
-<div class="pagination">
-    <span class="step-links">
-        {% if page_obj.has_previous %}
-            <a href="?page=1">&laquo; Начало </a>
-            <a href="?page={{ page_obj.previous_page_number }}"> <<< </a>
-        {% endif %}
+<!-- блок пагинатора -->
+{% load my_tags %}
 
-        <span class="current">
-            Стр {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}.
-        </span>
+{% if is_paginated %}
+  {% if page_obj.has_previous %}
+    <a href="?{% param_replace page=1 %}">First</a>
+    {% if page_obj.previous_page_number != 1 %}
+      <a href="?{% param_replace page=page_obj.previous_page_number %}">Previous</a>
+    {% endif %}
+  {% endif %}
 
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}"> >>> </a>
-            <a href="?page={{ page_obj.paginator.num_pages }}"> Конец &raquo;</a>
-        {% endif %}
-    </span>
-</div>
+  Page {{ page_obj.number }} of {{ paginator.num_pages }}
+
+  {% if page_obj.has_next %}
+    {% if page_obj.next_page_number != paginator.num_pages %}
+      <a href="?{% param_replace page=page_obj.next_page_number %}">Next</a>
+    {% endif %}
+    <a href="?{% param_replace page=paginator.num_pages %}">Last</a>
+  {% endif %}
+
+  <p>Objects {{ page_obj.start_index }}—{{ page_obj.end_index }}</p>
+{% endif %}
+<!-- блок пагинатора -->
+
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }} <!-- Теперь нам нужна только готовая форма и кнопка -->
+    <input type="submit" value="Добавить пост">
+</form>
+
 
 
 

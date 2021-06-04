@@ -26,4 +26,5 @@ urlpatterns = [
     # чтобы все адреса из файла NewsPaper/urls.py
     # сами автоматически подключались когда мы их добавим.
     path('news/', include('NewsPaper.urls')),
+    path('search/', include('NewsPaper.urls')),
 ]

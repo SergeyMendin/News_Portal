@@ -85,3 +85,240 @@ Paginator
 в модель, которая сделана на основе дженерика ListView, добавляем строку:
 # установим постраничный вывод на каждую новость
 paginate_by = 10
+
+##Создание форм на основе ModelForms
+
+####Создадим форму создания модели
+1. В папку с приложением добавим файл <b> forms.py </b>.
+В нём напишем следующее:
+    
+    
+    from django.forms import ModelForm
+    from .models import Post
+        
+    class PostForm(ModelForm):
+        class Meta:
+            model = Post
+            fields = ['title', 'post_author', 'post_category']
+
+2. Теперь эту модель PostForm нужно загрузить во вьюшку.
+В файл <b> views.py </b> добавим:
+    
+* импортируем созданную нами форму
+    
+        
+    from .forms import PostForm  # т.к. мы создали именно class PostForm(ModelForm)  
+
+    
+* в модель <b> class PostsList(ListView) </b> добавляем форм класс, 
+чтобы получать доступ к форме через метод POST
+
+    
+    form_class = PostForm
+
+ 
+
+* в ту же модель <b> class PostsList(ListView) </b> добавим модуль post
+
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)  
+         if form.is_valid():
+            form.save()
+         return super().get(request, *args, **kwargs)
+
+3. В файл post_list.html добавим конструкцию POST
+
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form }} <!-- Теперь нам нужна только готовая форма и кнопка -->
+        <input type="submit" value="Добавить пост">
+    </form>
+
+
+
+##Создадим форму детального просмотра модели
+####HTML
+####post_details.html
+В корневой директории проекта в папке создадим файл:
+<b>templates/(название приложения)/post_details.html</b>
+    
+    <! -- наследование шаблона default -->
+    {% extends 'flatpages/default.html' %}
+     
+    {% block title %} Post details {% endblock title %}
+     
+    {% block content %}
+    {% if object_list %}
+        <table>
+            <tr>
+                <td>
+                    <b>
+                        № поста
+                    </b>
+                </td>
+                <td>
+                    <b>
+                        Заголовок
+                    </b>
+                </td>
+    
+                <td>
+                    <b>
+                        Дата публикации в формате (день.месяц.год)
+                    </b>
+                </td>
+                <td>
+                    <b>
+                        Первые 20 слов текста статьи
+                    </b>
+                </td>
+            </tr>
+            {% for post in search.qs %} <!-- итерация фильтра -> search.qs передает отфильтрованные post-ы -->
+            <tr>
+                <td>
+                    {{ post.id }}
+                </td>
+    
+                <td>
+                    {{ post.title|default:"Без заголовка"|truncatewords:4|censor:'***' }}
+                </td>
+                <td>
+                    {{ post.date_created|default:"Без даты" }}
+                </td>
+                <td>
+                    {{ post.content|truncatechars:20|censor:'***' }}
+                </td>
+            {% endfor %}
+            </tr>
+        </table>
+    {% else %}
+    <h2>
+        Новостей нет!
+    </h2>
+    {% endif %}
+    {% endblock content %}
+
+####Django
+в файле view.py добавим новый класс дженерик для <b>получения развернутой статьи</b>
+
+
+    class PostDetailedView(DetailView):
+        template_name = 'NewsPaper/post_detail.html'
+        queryset = Post.objects.all()
+
+#### urls.py
+
+В файле urls.py добавим путь к страничке, которые будут генерироваться следуя шаблонам
+
+    path('<int:pk>/', PostDetailedView.as_view(), name='post_details'),
+
+<br>
+<br>
+<br>
+<br>
+
+### <b>Cоздание поста</b>
+
+####HTML
+#### product_create.html
+Создать файл в директории
+<b>templates/(название приложения)/product_create.html</b>
+
+    <! -- наследование шаблона default -->
+    {% extends 'flatpages/default.html' %}
+     
+    {% block title %} Post List {% endblock title %}
+     
+    {% block content %}
+    <h3>Информация о статье</h3>
+    <form method="POST">
+        {% csrf_token %} 
+        {{ form }} <!-- Теперь нам нужна только готовая форма и кнопка -->
+        <input type="submit" value="Запостить!">
+    </form>
+    {% endblock content %}
+
+#### views.py
+
+    class PostCreateView(CreateView):
+        template_name = 'NewsPaper/post_create.html'
+        form_class = PostForm
+
+#### urls.py
+
+В файле urls.py добавим путь к страничке, которые будут генерироваться следуя шаблонам
+
+    path('<int:pk>/', PostCreateView.as_view(), name='post_create'),
+
+####models.py
+в модель Post добавим абсолютный путь, чтобы после создания нас перебрасывало на страницу с постом
+
+    def get_absolute_url(self):  
+        return f'/news/{self.id}'
+<br>
+<br>
+<br>
+<br>
+
+### Добавление гиперссылки
+####в файле post_list.html внесём изменения:
+
+добавим строчку: <b>a href="{% url 'post_details' post.id %}"</b>, чтобы сделать из неё гиперссылку
+
+    <td>
+        <a href="{% url 'post_details' post.id %}"> {{ post.title|default:"Без заголовка"|truncatewords:4|censor:'***' }}
+    </td>
+
+
+<br>
+<br>
+<br>
+<br>
+
+
+
+
+
+### Рабочий paginator
+цикл должен пробегаться не по отфильтрованным search.qs, 
+а по object_list:<b>
+{% for post in object_list %}
+</b>
+1. Создать файл: <b>(app)/templatetags/my_tags.py</b>
+
+
+
+    from django import template
+    register = template.Library()
+
+    @register.simple_tag(takes_context=True)
+    def param_replace(context, **kwargs):
+        d = context['request'].GET.copy()
+        for k, v in kwargs.items():
+            d[k] = v
+        for k in [k for k, v in d.items() if not v]:
+            del d[k]
+        return d.urlencode()
+
+2. 
+
+    
+    {% load my_tags %}
+    {% if is_paginated %}
+      {% if page_obj.has_previous %}
+        <a href="?{% param_replace page=1 %}">First</a>
+        {% if page_obj.previous_page_number != 1 %}
+          <a href="?{% param_replace page=page_obj.previous_page_number %}">Previous</a>
+        {% endif %}
+      {% endif %}
+      Page {{ page_obj.number }} of {{ paginator.num_pages }}
+      {% if page_obj.has_next %}
+        {% if page_obj.next_page_number != paginator.num_pages %}
+          <a href="?{% param_replace page=page_obj.next_page_number %}">Next</a>
+        {% endif %}
+        <a href="?{% param_replace page=paginator.num_pages %}">Last</a>
+      {% endif %}
+      <p>Objects {{ page_obj.start_index }}—{{ page_obj.end_index }}</p>
+    {% endif %}

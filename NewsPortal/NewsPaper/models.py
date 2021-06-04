@@ -33,6 +33,9 @@ class Author(models.Model):
         # сохраняем результаты в базу данных
         self.save()
 
+    # возвращаем на страницу имя пользователя
+    def __str__(self):
+        return f'{self.author.username.title()}'
 
 # создаем модель категории статьи/новости
 class Category(models.Model):
@@ -40,6 +43,8 @@ class Category(models.Model):
     # данное поле делаем уникальным
     article_category = models.CharField(max_length=255, unique=True)
 
+    def __str__(self):
+        return f'{self.article_category}'
 
 # создаем модель пост
 class Post(models.Model):
@@ -98,12 +103,18 @@ class Post(models.Model):
         return f'{self.title.title()}: {self.content[:20]}'
 
 
-# создаем промежуточную модель PostCategory
+    # добавим абсолютный путь, чтобы после создания нас перебрасывало на страницу с постом
+    def get_absolute_url(self):
+        return f'/news/{self.id}'
+
+
+    # создаем промежуточную модель PostCategory
 class PostCategory(models.Model):
     # связь «один ко многим» с моделью Post
     post_category = models.ForeignKey(Post, on_delete=models.CASCADE)
     # связь «один ко многим» с моделью Category
     category_category = models.ManyToManyField(Category)
+
 
 
 # создаем модель Comment, чтобы можно было под каждой новостью/статьей оставлять комментарии

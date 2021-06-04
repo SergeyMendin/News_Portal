@@ -4,16 +4,19 @@ from django.shortcuts import render
 
 # импортируем класс, который говорит нам о том,
 # что в этом представлении мы будем выводить список объектов из БД
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, CreateView
 
 # импортируем модель Post из models.py
-from .models import Post
+from .models import Post, PostCategory
 
 # импортируем наш фильтр
 from .search import PostFilter
 
 # импортируем класс, позволяющий удобно осуществлять постраничный вывод
 from django.core.paginator import Paginator
+
+# импортируем созданную нами форму
+from .forms import PostForm  # т.к. мы создали именно class PostForm(ModelForm)
 
 
 # создадим модель объектов, которые будем выводить
@@ -39,6 +42,9 @@ class PostsList(ListView):
     # установим постраничный вывод на каждую новость через paginator
     paginate_by = 10
 
+    # добавим ссылку на форму:
+    form_class = PostForm
+
     # пишем модуль, который принимает на вход отфильтрованные объекты
     def get_context_data(self, **kwargs):
         # распаковываем self = Posts
@@ -47,6 +53,8 @@ class PostsList(ListView):
             self.request.GET,
             queryset=self.get_queryset()
         )
+        context['categories'] = PostCategory.objects.all()
+        context['form'] = PostForm()
         return context
 
     # сортируем все обекты модели Post по параметру даты создания в обратном порядке:
@@ -54,8 +62,20 @@ class PostsList(ListView):
         qset = super().get_queryset()
         return qset.order_by('id', '-date_created')
 
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save()
+        return super().get(request, *args, **kwargs)
 
-class PostDetail(DetailView):
-    model = Post
-    template_name = 'post.html'
-    context_object_name = 'post'
+
+# пост детально
+class PostDetailedView(DetailView):
+    template_name = 'newspaper/post_details.html'
+    queryset = Post.objects.all()
+
+
+# создание поста
+class PostCreateView(CreateView):
+    template_name = 'newspaper/post_create.html'
+    form_class = PostForm
